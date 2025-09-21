@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+  <html lang="vi">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>TRANG CHỦ</title>
+    <style></style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <img src="img/Logo1.png" alt="">
+      <h1>Nhiệt Huyết Tuổi Trẻ, Chia Sẻ Yêu Thương.</h1>
+      <button class="btnclear" onclick="clearAll()">Xóa toàn bộ dữ liệu</button>
+    </header>
+    <div class="main-content">
+      <!-- Form nhập liệu -->
+      <div class="container" id="form-container">
+        <h2>Form Nhập Thông Tin</h2>
+        <form id="studentForm">
+          <label for="name">Họ và tên:</label>
+          <input type="text" id="name" required>
+          <label for="phone">Số điện thoại:</label>
+          <input 
+            type="text" 
+            id="phone" 
+            maxlength="10" 
+            pattern="[0-9]{10}"
+            title="Số điện thoại phải có đúng 10 chữ số"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
+            required>
+
+          <label for="hometown">Quê quán:</label>
+          <input type="text" id="hometown">
+
+          <label for="id">Mã sinh viên:</label>
+          <input type="number" id="id" required>
+
+          <label>Khóa:</label>
+          <div class="radio-group" id="yearGroup">
+            <label><input type="radio" name="year" value="22">22</label>
+            <label><input type="radio" name="year" value="23">23</label>
+            <label><input type="radio" name="year" value="24">24</label>
+          </div>
+
+          <label for="group">Nhóm ngành:</label>
+          <select id="group" required>
+            <option value="">--Chọn nhóm ngành--</option>
+            <option value="lkqt">Liên kết quốc tế - chất lượng cao</option>
+            <option value="cntt">Công nghệ thông tin</option>
+            <option value="ktcn">Kỹ thuật công nghệ số</option>
+            <option value="mttt">Mỹ thuật - truyền thông số</option>
+            <option value="ktqt">Kinh tế - Quản trị số</option>
+            <option value="nn">Ngôn ngữ cho truyền thông</option>
+          </select>
+
+          <label for="major">Ngành:</label>
+          <select id="major" required>
+            <option value="">--Chọn ngành--</option>
+          </select>
+
+          <label>Lớp (chọn tối đa 3):</label>
+          <div class="matrix-group" id="classGroup"></div>
+
+          <label class="check">Status <input type="checkbox" id="good"></label>
+          <button class="btnsave" type="submit" id="saveBtn">Lưu</button>
+          <button class="btnexit" type="button" id="cancelUpdate" style="display:none;">Thoát chế độ Update</button>
+        </form>
+      </div>
+
+      <!-- Danh sách sinh viên -->
+      <div class="container" id="list-container">
+        <h2>Danh Sách</h2>
+        <button class="btnport" onclick="exportCSV()">Xuất CSV</button>
+        <button class="btnport" onclick="exportExcel()">Xuất Excel</button>
+        <table>
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>MSSV</th>
+              <th>Họ và tên</th>
+              <!-- <th>Ngành</th> --> 
+              <th>Lớp</th>
+              <th>SĐT</th>
+              <th>Quê quán</th>
+              <th>Status</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="studentList"></tbody>
+        </table>
+      </div>
+    </div>
+    <footer>
+      <p style="color: rgb(97, 186, 246); font-size: 18px;">© 2025 VPC' Family - Web nhập liệu</p>
+    </footer>
+    <script>
+    const majors = {
+      lkqt: ["CÔNG NGHỆ THÔNG TIN Quốc Tế", "Công Nghệ Thông Tin Chất Lượng Cao", "Kỹ Thuật Phần Mềm Liên Kết Quốc Tế – KNU"],
+      cntt: ["Công nghệ thông tin","An Toàn Thông Tin","KHOA HỌC MÁY TÍNH","Kỹ Thuật Phần Mềm","Hệ Thống Thông Tin","Mạng Máy Tính"],
+      ktcn: ["Kỹ Thuật Điện, Điện Tử", "CƠ ĐIỆN TỬ", "TỰ ĐỘNG HÓA", "ĐIỆN TỬ,VIỄN THÔNG", "CÔNG NGHỆ Ô TÔ", "VI MẠCH BÁN DẪN"],
+      mttt: ["CÔNG NGHỆ TRUYỀN THÔNG", "THIẾT KẾ ĐỒ HỌA", "TRUYỀN THÔNG ĐA PHƯƠNG TIỆN", "NGHỆ THUẬT SỐ"],
+      ktqt: ["QUẢN TRỊ KINH DOANH SỐ", "THƯƠNG MẠI ĐIỆN TỬ", "MARKETING SỐ", "QUẢN TRỊ VĂN PHÒNG", "LOGISTICS", "CHUỖI CUNG ỨNG"],
+      nn: ["NGÔN NGỮ ANH","TIẾNG ANH TRUYỀN THÔNG"]
+    };
+    const majorAbbr = {
+      "Công nghệ thông tin": "CNTT", "CÔNG NGHỆ THÔNG TIN Quốc Tế": "CNTTQT",
+      "Công Nghệ Thông Tin Chất Lượng Cao": "CNTTCLC", "Kỹ Thuật Phần Mềm Liên Kết Quốc Tế – KNU": "KTPMQT",
+      "An Toàn Thông Tin":"ATTT", "KHOA HỌC MÁY TÍNH":"KHMT", "Kỹ Thuật Phần Mềm":"KTPM",
+      "Hệ Thống Thông Tin":"HTTT", "Mạng Máy Tính":"MMT", "Kỹ Thuật Điện, Điện Tử":"KTĐĐT",
+      "CƠ ĐIỆN TỬ":"CĐT", "TỰ ĐỘNG HÓA":"TDH", "ĐIỆN TỬ,VIỄN THÔNG":"ĐTVT", "CÔNG NGHỆ Ô TÔ":"OTO",
+      "VI MẠCH BÁN DẪN":"VMBD", "CÔNG NGHỆ TRUYỀN THÔNG":"CNTrT", "THIẾT KẾ ĐỒ HỌA":"TKĐH",
+      "TRUYỀN THÔNG ĐA PHƯƠNG TIỆN":"TTĐPT", "NGHỆ THUẬT SỐ":"NTS", "QUẢN TRỊ KINH DOANH SỐ":"QTKD",
+      "THƯƠNG MẠI ĐIỆN TỬ":"TMĐT", "MARKETING SỐ":"MKT", "QUẢN TRỊ VĂN PHÒNG":"QTVP", "LOGISTICS":"LOGISTICS",
+      "CHUỖI CUNG ỨNG":"CCƯ", "NGÔN NGỮ ANH":"NNA","TIẾNG ANH TRUYỀN THÔNG":"TATT"
+    };
+    // Lấy dữ liệu từ localStorage
+    let students = JSON.parse(localStorage.getItem("students") || "[]");
+    let updateIndex=-1;
+    // Tạo lớp theo bảng chữ cái
+    const classGroup=document.getElementById("classGroup");
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(ch=>{
+      const lbl=document.createElement("label");
+      lbl.style.marginRight="5px";
+      lbl.innerHTML=`<input type="checkbox" name="className" value="${ch}" onchange="limitClassSelection()"> ${ch}`;
+      classGroup.appendChild(lbl);
+    });
+    // Giới hạn chọn tối đa 3 lớp
+    function limitClassSelection(){
+      const checked=document.querySelectorAll("input[name='className']:checked");
+      if(checked.length>3){
+        alert("Bạn chỉ được chọn tối đa 3 lớp!");
+        checked[checked.length-1].checked=false;
+      }
+    }
+    // Cập nhật ngành theo nhóm
+    document.getElementById("group").addEventListener("change",function(){
+      const val=this.value;
+      const majorSelect=document.getElementById("major");
+      majorSelect.innerHTML="<option value=''>-- Chọn ngành --</option>";
+      if(majors[val]){
+        majors[val].forEach(m=>{
+          const opt=document.createElement("option");
+          opt.value=m; opt.textContent=m;
+          majorSelect.appendChild(opt);
+        });
+      }
+    });
+    // Cập nhật sinh viên
+    document.getElementById("studentForm").addEventListener("submit",function(e){
+      e.preventDefault();
+      const selectedClasses = Array.from(document.querySelectorAll("input[name='className']:checked"))
+                                  .map(c => c.value).join(",");
+      const student={
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        hometown: document.getElementById("hometown").value,
+        id: document.getElementById("id").value,
+        year: document.querySelector("input[name='year']:checked")?.value || "",
+        group: document.getElementById("group").value,
+        major: document.getElementById("major").value,
+        className: selectedClasses,
+        good: document.getElementById("good").checked
+      };
+      if(updateIndex>=0){ 
+        students[updateIndex]=student; 
+        updateIndex=-1; 
+        document.getElementById("cancelUpdate").style.display="none"; 
+        document.getElementById("saveBtn").textContent="Lưu";
+      }
+      else students.push(student);
+      this.reset(); document.getElementById("name").focus();
+      localStorage.setItem("students", JSON.stringify(students));
+      renderList();
+      alert("Lưu thành công!");
+    });
+    // Hủy cập nhật
+    document.getElementById("cancelUpdate").addEventListener("click",function(){
+      updateIndex=-1; document.getElementById("studentForm").reset(); this.style.display="none";
+      document.getElementById("saveBtn").textContent="Lưu";
+    });
+    // Render danh sách
+    function renderList(){
+      const tbody=document.getElementById("studentList");
+      tbody.innerHTML="";
+      students.forEach((s,i)=>{
+        const abbr=majorAbbr[s.major]||s.major;
+        const classDisplay = s.className ? `${abbr} K${s.year}${s.className.replace(/,/g,"")}` : "";
+        const tr=document.createElement("tr");
+        tr.innerHTML=`
+          <td>${i+1}</td>
+          <td>DTC${s.id}</td>
+          <td>${s.name}</td>
+          <td>${classDisplay}</td>
+          <td>${s.phone}</td>
+          <td>${s.hometown}</td>
+          <td>${s.good ? "🟢" : "🔴"}</td>
+          <td>
+            <button class="btn-edit" onclick="editStudent(${i})">Sửa</button>
+            <button class="btn-delete" onclick="deleteStudent(${i})">Xóa</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    // Sửa sinh viên
+    function editStudent(i){
+      const s=students[i];
+      document.getElementById("name").value=s.name;
+      document.getElementById("phone").value=s.phone;
+      document.getElementById("hometown").value=s.hometown;
+      document.getElementById("id").value=s.id;
+      document.querySelectorAll("input[name='year']").forEach(r=>r.checked=r.value===s.year);
+      document.getElementById("group").value=s.group;
+      document.getElementById("group").dispatchEvent(new Event("change"));
+      document.getElementById("major").value=s.major;
+      document.querySelectorAll("input[name='className']").forEach(r=>{
+        r.checked = s.className.split(",").includes(r.value);
+      });
+      document.getElementById("good").checked=s.good;
+      updateIndex=i;
+      document.getElementById("cancelUpdate").style.display="inline";
+      document.getElementById("saveBtn").textContent="Cập nhật";
+    }
+    // Xóa sinh viên
+    function deleteStudent(i){
+      if(confirm("Bạn có chắc muốn xóa sinh viên này?")){
+        students.splice(i,1);
+        localStorage.setItem("students", JSON.stringify(students));
+        renderList();
+      }
+    }
+    // Xóa toàn bộ dữ liệu
+    function clearAll(){
+      if(confirm("Bạn có chắc muốn xóa toàn bộ dữ liệu?")){
+        students=[];
+        localStorage.removeItem("students");
+        renderList();
+      }
+    }
+    // Xuất CSV
+    function exportCSV(){
+      let csv="STT,MSSV,Họ và tên,Ngành,Lớp,SĐT,Quê quán,Status\n";
+      students.forEach((s,i)=>{
+        const abbr=majorAbbr[s.major]||s.major;
+        const classDisplay = s.className ? `${abbr} K${s.year}${s.className.replace(/,/g,"")}` : "";
+        csv+=`${i+1},DTC${s.id},${s.name},${s.major},${classDisplay},${s.phone},${s.hometown},${s.good?"YES":"NO"}\n`;
+      });
+      const BOM = '\uFEFF'; // BOM cho UTF-8
+      const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+      const link=document.createElement("a");
+      link.href=URL.createObjectURL(blob);
+      link.download="sinhvien.csv";
+      link.click();
+    } 
+    // Xuất Excel
+    function exportExcel(){
+      const data=[["STT","MSSV","Họ và tên","Ngành","Lớp","SĐT","Quê quán","Status"]];
+      students.forEach((s,i)=>{
+        const abbr=majorAbbr[s.major]||s.major;
+        const classDisplay = s.className ? `${abbr} K${s.year}${s.className.replace(/,/g,"")}` : "";
+        data.push([i+1,"DTC"+s.id,s.name,s.major,classDisplay,s.phone,s.hometown,s.good?"YES":"NO"]);
+      });
+      const ws=XLSX.utils.aoa_to_sheet(data);
+      const wb=XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb,ws,"DanhSach");
+      XLSX.writeFile(wb,"sinhvien.xlsx");
+    }
+    // Khởi tạo
+    renderList();
+    </script>
+  </body>
+</html>
