@@ -7,6 +7,19 @@
     <style></style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   </head>
+  <script>
+  const correctPassword = "vpc2025"; // 🔒 Mật khẩu truy cập
+  const entered = sessionStorage.getItem("entered");
+  if (!entered) {
+    const input = prompt("Nhập mật khẩu để truy cập trang:");
+    if (input === correctPassword) {
+      sessionStorage.setItem("entered", "yes");
+    } else {
+      alert("Sai mật khẩu! Bạn không được phép truy cập.");
+      window.location.href = "https://vpcictu.vercel.app/"; // hoặc trang khác
+    }
+  }
+</script>
   <body>
     <header>
       <img src="img/Logo1.png" alt="">
@@ -38,9 +51,11 @@
 
           <label>Khóa:</label>
           <div class="radio-group" id="yearGroup">
-            <label><input type="radio" name="year" value="22">22</label>
-            <label><input type="radio" name="year" value="23">23</label>
-            <label><input type="radio" name="year" value="24">24</label>
+            <label><input type="radio" name="year" value="22" checked>24</label>
+            <label><input type="radio" name="year" value="23">25</label>
+            <label><input type="radio" name="year" value="24">26</label>
+            <label><input type="radio" name="year" value="25">27</label>
+            <label><input type="radio" name="year" value="26">28</label>
           </div>
 
           <label for="group">Nhóm ngành:</label>
@@ -92,20 +107,20 @@
       </div>
     </div>
     <footer>
-      <p style="color: rgb(97, 186, 246); font-size: 18px;">© 2025 VPC' Family - Web nhập liệu</p>
+      <p style="color: rgb(97, 186, 246); font-size: 18px;">© 2025 VPC'Family - Web nhập liệu</p>
     </footer>
     <script>
     const majors = {
       lkqt: ["CÔNG NGHỆ THÔNG TIN Quốc Tế", "Công Nghệ Thông Tin Chất Lượng Cao", "Kỹ Thuật Phần Mềm Liên Kết Quốc Tế – KNU"],
-      cntt: ["Công nghệ thông tin","An Toàn Thông Tin","KHOA HỌC MÁY TÍNH","Kỹ Thuật Phần Mềm","Hệ Thống Thông Tin","Mạng Máy Tính"],
+      cntt: ["Công nghệ thông tin","An Toàn Thông Tin","KHOA HỌC MÁY TÍNH","Kỹ Thuật Phần Mềm","Hệ Thống Thông Tin","Mạng Máy Tính", "Kỹ Thuật Máy Tính"],
       ktcn: ["Kỹ Thuật Điện, Điện Tử", "CƠ ĐIỆN TỬ", "TỰ ĐỘNG HÓA", "ĐIỆN TỬ,VIỄN THÔNG", "CÔNG NGHỆ Ô TÔ", "VI MẠCH BÁN DẪN"],
       mttt: ["CÔNG NGHỆ TRUYỀN THÔNG", "THIẾT KẾ ĐỒ HỌA", "TRUYỀN THÔNG ĐA PHƯƠNG TIỆN", "NGHỆ THUẬT SỐ"],
       ktqt: ["QUẢN TRỊ KINH DOANH SỐ", "THƯƠNG MẠI ĐIỆN TỬ", "MARKETING SỐ", "QUẢN TRỊ VĂN PHÒNG", "LOGISTICS", "CHUỖI CUNG ỨNG"],
       nn: ["NGÔN NGỮ ANH","TIẾNG ANH TRUYỀN THÔNG"]
     };
     const majorAbbr = {
-      "Công nghệ thông tin": "CNTT", "CÔNG NGHỆ THÔNG TIN Quốc Tế": "CNTTQT",
-      "Công Nghệ Thông Tin Chất Lượng Cao": "CNTTCLC", "Kỹ Thuật Phần Mềm Liên Kết Quốc Tế – KNU": "KTPMQT",
+      "Công nghệ thông tin": "CNTT", "CÔNG NGHỆ THÔNG TIN Quốc Tế": "CNTTQT", "Kỹ Thuật Máy Tính": "KTMT",
+      "Công Nghệ Thông Tin Chất Lượng Cao": "CNTT CLC", "Kỹ Thuật Phần Mềm Liên Kết Quốc Tế – KNU": "KTPMQT",
       "An Toàn Thông Tin":"ATTT", "KHOA HỌC MÁY TÍNH":"KHMT", "Kỹ Thuật Phần Mềm":"KTPM",
       "Hệ Thống Thông Tin":"HTTT", "Mạng Máy Tính":"MMT", "Kỹ Thuật Điện, Điện Tử":"KTĐĐT",
       "CƠ ĐIỆN TỬ":"CĐT", "TỰ ĐỘNG HÓA":"TDH", "ĐIỆN TỬ,VIỄN THÔNG":"ĐTVT", "CÔNG NGHỆ Ô TÔ":"OTO",
